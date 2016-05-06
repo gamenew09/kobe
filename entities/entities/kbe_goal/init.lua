@@ -9,7 +9,7 @@ end
 
 function ENT:KeyValue(k, v)
 	if k == "team" then
-		self.Entity
+		--self.Entity
 	end
 end
 

@@ -1,6 +1,11 @@
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 
+AddCSLuaFile("glogs.lua")
+
+AddCSLuaFile("roundmanager/roundmanager.lua")
+AddCSLuaFile("kbpowerup.lua") 
+
 include( "shared.lua" )
 
 local kbe_allowpowerups = CreateConVar("kbe_allowpowerups", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Enables or disables powerups in KOBE.")
@@ -46,9 +51,9 @@ hook.Add("InitPostEntity", "KOBE_PostEnt", function ()
 end)
 --]]
 
-GAMEMODE.SpawnPowerup = {}
+GM.SpawnPowerup = {}
 
-function GAMEMODE:RespawnPowerupOnTime( ind )
+function GM:RespawnPowerupOnTime( ind )
 	if not GAMEMODE.SpawnPowerup[ind] then
 		timer.Simple(kbe_poweruprespawn.GetInt(), function ()
 			local spawn = GAMEMODE.PowerupSpawns[math.random(1, #GAMEMODE.PowerupSpawns)]
@@ -59,7 +64,7 @@ function GAMEMODE:RespawnPowerupOnTime( ind )
 	end
 end
 
-function GAMEMODE:CauseRespawnPowerup( ent )
+function GM:CauseRespawnPowerup( ent )
 	if GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"]]:EntIndex() == ent:EntIndex() then
 		GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"]] = nil
 		GAMEMODE:RespawnPowerupOnTime( ent:GetTable()["PowerupSpawnID"] )

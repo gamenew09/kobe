@@ -3,8 +3,6 @@ GM.Author = "Gamenew09"
 GM.Email = "gamenew09@gmail.com"
 GM.Website = "gamenew09.com"
 
-DeriveGamemode( "base" )
-
 include("glogs.lua")
 
 include("roundmanager/roundmanager.lua")
