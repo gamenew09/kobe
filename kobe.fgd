@@ -1,0 +1,14 @@
+@SolidClass base(Targetname) = kbe_goal : "The goal the players want to go score into."
+[
+	team(choices) : "Team" : 1 : "The team used for the goal" =
+	[
+		2 : "Red"
+		3 : "Blue"
+	] 
+]
+
+ 
+@PointClass base(Targetname) = kbe_ballspawn : "Where does the ball spawn, only have one."
+[
+	
+]

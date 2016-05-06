@@ -1,0 +1,12 @@
+"kobe"
+{
+	"base"		"base"
+	"title"		"KOBE"
+	"maps"		"^kbe_"
+	"menusystem"	"1"
+	// "workshopid"	"15895"
+
+	"settings"
+	{ 
+	}
+}
