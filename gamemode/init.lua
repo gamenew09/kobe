@@ -36,7 +36,6 @@ end
 local ballEnt = nil
 
 local function GetBallSpawn()
-	print(ents.FindByClass( "kbe_ballspawn" )[1]:GetPos())
 	return ents.FindByClass( "kbe_ballspawn" )[1]:GetPos()
 end
 
@@ -84,10 +83,8 @@ end
 
 -- Net Messages
 
--- models/props_phx/misc/soccerball.mdl
--- models/pickups/pickup_powerup_agility.mdl
-
 function GM:PlayerSpawn( ply )
+	
 	self.BaseClass.PlayerSpawn( self, ply )
 end
 

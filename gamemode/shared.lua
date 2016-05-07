@@ -33,8 +33,16 @@ function GM:Initialize()
 		end)
 	end)
 	glogs.Write("Initialized")
-	print("init")
 	self.BaseClass.Initialize( self )
+end
+
+function GM:GoalScore( goalEnt, ballEnt, teamNum )
+	local shouldScore = hook.Call("GoalScore", nil, goalEnt, ballEnt, teamNum)
+	if not shouldScore then
+		
+	else
+		glogs.Write("Ignoring Goal Score.")
+	end
 end
 
 GM.NetMsgPrefix = "KOBE_" 
@@ -44,4 +52,3 @@ TEAM_BLUE = 3
 
 team.SetUp( TEAM_RED, "Red Team", Color( 255, 0, 0 ) )
 team.SetUp( TEAM_BLUE, "Blue Team", Color( 0, 0, 255 ) )
-print("init")

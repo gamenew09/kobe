@@ -12,3 +12,8 @@
 [
 	
 ]
+
+@PointClass base(Targetname) = kbe_powerupspawn : "The spawn that a powerup can use to spawn at."
+[
+	
+]
