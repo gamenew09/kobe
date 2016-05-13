@@ -14,7 +14,7 @@ local inround = false
 
 if SERVER then
 	function roundmanager.Start(length)
-		if inround then return false end
+		if inround or length == nil then return false end
 		timeLength = length
 		timeStarted = CurTime()
 		inround = true
@@ -26,8 +26,8 @@ if SERVER then
 			net.Broadcast()
 		end)
 		net.Start( rndstart_netmsg )
-			net.WriteInt(timeStarted)
-			net.WriteInt(timeLength)
+			net.WriteFloat(timeStarted)
+			net.WriteFloat(timeLength)
 		net.Broadcast()
 		return true
 	end
@@ -54,8 +54,8 @@ end
 
 if CLIENT then
 	net.Receive( rndstart_netmsg, function( len, pl )
-		timeStarted = net.ReadInt()
-		timeLength = net.ReadInt()
+		timeStarted = net.ReadFloat()
+		timeLength = net.ReadFloat()
 		inround = true
 		hook.Call( "RoundStart", nil, timeStarted )
 	end)
@@ -63,6 +63,6 @@ if CLIENT then
 		timeStarted = 0
 		timeLength = 0
 		inround = false
-		hook.Call( "RoundEnd", nil, CurTime(), false )
+		hook.Call( "RoundEnd", nil, CurTime(), net.ReadBool() )
 	end)
 end

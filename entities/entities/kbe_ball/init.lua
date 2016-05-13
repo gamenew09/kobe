@@ -17,6 +17,7 @@ function ENT:Initialize()
 end
 
 ENT.VelocityPush = 750
+ENT.MaxTeleportTries = 50
 
 function ENT:Use( activator, caller )
     local velAng = activator:EyeAngles():Forward()
@@ -36,11 +37,13 @@ function ENT:Think()
     -- We don't need to think, we are just a prop after all!
 	if self:GetPhysicsObject():IsPenetrating() then
 		self:GetPhysicsObject():SetPos(self.Entity:GetTable()["lastPos"])
-		local maxadd = 100
 		local i = 0
-		while self:GetPhysicsObject():IsPenetrating() and i < maxadd do
+		while self:GetPhysicsObject():IsPenetrating() and i < self.MaxTeleportTries do
 			self:GetPhysicsObject():SetPos(self.Entity:GetTable()["lastPos"] + Vector(0, i, 0))
 			i = i + 1
+		end
+		if i == self.MaxTeleportTries - 1 then
+			GAMEMODE:TeleportBallToCenter()
 		end
 		self.Entity:EmitSound("AlyxEMP.Discharge")
 	else

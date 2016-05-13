@@ -36,10 +36,75 @@ function GM:Initialize()
 	self.BaseClass.Initialize( self )
 end
 
+if SERVER then
+	util.AddNetworkString("KOBE_IntermissionStart")
+	util.AddNetworkString("KOBE_IntermissionEnd")
+
+	kbe_intermissiontime = CreateConVar("kbe_intermissiontime", "5", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "How long, in seconds, are the rounds.")
+	function GM:ReloadPlayers()
+		for i,v in pairs(player.GetAll()) do
+			v:UnSpectate()
+			v:Spawn()
+			self:PlayerSpawn(v)
+		end
+	end
+	
+	function GM:AllPlayerSpectate()
+		for i,v in pairs(player.GetAll()) do
+			self:PlayerSpawnAsSpectator( v )
+		end
+	end
+	
+	function GM:PlayerSpawnAsSpectator( pl )
+
+		pl:StripWeapons()
+		
+		if ( pl:Team() == TEAM_UNASSIGNED ) then
+		
+			pl:Spectate( OBS_MODE_FIXED )
+			return
+			
+		end
+
+		pl:SetTeam( TEAM_SPECTATOR )
+		pl:Spectate( OBS_MODE_ROAMING )
+
+	end
+	
+	GM.IntermissionStartTime = 0
+	GM.InIntermission = false
+	
+	function GM:StartIntermission()
+		self.InIntermission = true
+		self.IntermissionStartTime = CurTime()
+		hook.Call("IntermissionStart", nil)
+		net.Start( "KOBE_IntermissionStart" )
+			net.WriteFloat(self.IntermissionStartTime)
+			net.WriteFloat(kbe_intermissiontime:GetInt())
+		net.Broadcast()
+		timer.Simple(kbe_intermissiontime:GetInt(), function ()
+			self.InIntermission = false
+			hook.Call("IntermissionOver", nil)
+			net.Start( "KOBE_IntermissionEnd" )
+			net.Broadcast()
+		end)
+	end
+	
+	function GM:GetIntermissionTime()
+		return math.Round((IntermissionStartTime+kbe_intermissiontime:GetInt())-CurTime())
+	end
+end
+
 function GM:GoalScore( goalEnt, ballEnt, teamNum )
 	local shouldScore = hook.Call("GoalScore", nil, goalEnt, ballEnt, teamNum)
 	if not shouldScore then
-		
+		if SERVER then
+			roundmanager.End()
+			ballEnt:Remove()
+			ballEnt = nil
+			self:AllPlayerSpectate()
+			self:StartIntermission()
+		end
 	else
 		glogs.Write("Ignoring Goal Score.")
 	end

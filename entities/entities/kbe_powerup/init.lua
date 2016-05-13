@@ -7,7 +7,7 @@ function ENT:Initialize()
  
 	self:SetModel( "models/pickups/pickup_powerup_agility.mdl" )
 	self:PhysicsInit( SOLID_VPHYSICS )      -- Make us work with physics,
-	self:SetMoveType( MOVETYPE_VPHYSICS )   -- after all, gmod is a physics
+	self:SetMoveType( MOVETYPE_NONE )   -- after all, gmod is a physics
 	self:SetSolid( SOLID_VPHYSICS )         -- Toolbox
 	
     local phys = self:GetPhysicsObject()

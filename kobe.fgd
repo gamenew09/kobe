@@ -1,10 +1,19 @@
 @SolidClass base(Targetname) = kbe_goal : "The goal the players want to go score into."
 [
-	team(choices) : "Team" : 1 : "The team used for the goal" =
+	team(choices) : "Team" : 2 : "The team used for the goal" =
 	[
 		2 : "Red"
 		3 : "Blue"
 	] 
+]
+
+@SolidClass base(Targetname) = kbe_ballteleport : "When a ball goes into this brush, it'll teleport to the ball spawn."
+[
+	playersShould(choices) : "Should Player's Teleport Too?" : 0 : "Should the players be telported in this zone? (BROKEN RIGHT NOW)" =
+	[
+		0 : "No"
+		1 : "Yes"
+	]  
 ]
 
  
