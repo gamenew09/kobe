@@ -1,5 +1,5 @@
 ENT.Type = "anim"
-ENT.Base = "base_gmodentity"
+ENT.Base = "base_anim"
  
 ENT.PrintName= "KOBE Powerup"
 ENT.Author= "Gamenew09"
@@ -9,9 +9,11 @@ ENT.Instructions= "Only use in KOBE."
 ENT.Spawnable = false
 ENT.AdminSpawnable = false
 
+ENT.PowerupName = ""
+
 function ENT:SetupDataTables()
-	self:NetworkVar( "String", kbpowerup.RandomPowerupName(), "PowerupName" )
-	if SERVER then
-		self:SetModel( kbpowerup.GetModel(self.Entity) )
-	end
+	self.PowerupName = kbpowerup.RandomPowerupName()
+	self.Entity:SetVar(self.PowerupName)
+	self:NetworkVar( "String", 0, "PowerupName" )
+	self:SetPowerupName(self.PowerupName)
 end

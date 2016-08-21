@@ -9,6 +9,8 @@ AddCSLuaFile("kbpowerup.lua")
 include( "shared.lua" )
 
 util.AddNetworkString("KOBE_CleanUpMap")
+util.AddNetworkString("KOBE_PlayerPickup")
+util.AddNetworkString("KOBE_PowerupPickupFailed")
 
 local kbe_allowpowerups = CreateConVar("kbe_allowpowerups", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Enables or disables powerups in KOBE.")
 local kbe_falldamage = CreateConVar("kbe_falldamage", "1", { FCVAR_NOTIFY, FCVAR_REPLICATED }, "Enables or disables fall damage in KOBE, usefull for maps that have durastic height changes that require to take damage.")
@@ -53,27 +55,62 @@ hook.Add("InitPostEntity", "KOBE_PostEnt", function ()
 	end
 	
 	GAMEMODE.PowerupSpawns = ents.FindByClass("kbe_powerupspawn")
+	for i,v in pairs(GAMEMODE.PowerupSpawns) do
+		v:SetVar("SpawnID", i)
+	end
 end)
 
 GM.SpawnPowerup = {}
 
+--[[
 function GM:RespawnPowerupOnTime( ind )
 	if not GAMEMODE.SpawnPowerup[ind] then
 		timer.Simple(kbe_poweruprespawn:GetInt(), function ()
 			local spawn = GAMEMODE.PowerupSpawns[math.random(1, #GAMEMODE.PowerupSpawns)]
 			
 			GAMEMODE.SpawnPowerup[ind] = SpawnRandomPowerup(spawn:GetPos())
-			GAMEMODE.SpawnPowerup[ind]:SetVar("PowerupSpawnID", ind)
+			GAMEMODE.SpawnPowerup[ind]:SetNetworkedInt("PowerupSpawnID", ind)
 		end)
 	end
 end
 
 function GM:CauseRespawnPowerup( ent )
-	if GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"]]:EntIndex() == ent:EntIndex() then
+	if GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"] ]:EntIndex() == ent:EntIndex() then
 		glogs.Write("CauseRespawnPowerup ["..ent:EntIndex().."]")
-		GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"]] = nil
+		GAMEMODE.SpawnPowerup[ent:GetTable()["PowerupSpawnID"] ] = nil
 		GAMEMODE:RespawnPowerupOnTime( ent:GetTable()["PowerupSpawnID"] )
 	end
+end
+--]]
+
+function GM:RespawnPowerupOnTime(spawnIndex, time)
+	timer.Simple(time or kbe_poweruprespawn:GetInt(), function ()
+		GAMEMODE:RespawnPowerup( spawnIndex )
+	end)
+end
+
+function GM:RespawnPowerup( spawnIndex )
+	local spawn
+	if not spawnIndex then
+		spawnIndex = math.random(1, #GAMEMODE.PowerupSpawns)
+		spawn = GAMEMODE.PowerupSpawns[spawnIndex]
+	else
+		spawn = GAMEMODE.PowerupSpawns[spawnIndex]
+		if not spawn then
+			return -1
+		end
+	end
+	local ent = SpawnRandomPowerup(spawn:GetPos())
+	ent:SetVar("SpawnID", spawn:GetVar("SpawnID"))
+	ent:SetVar("PowerupID", #GAMEMODE.SpawnPowerup + 1)
+	
+	if GAMEMODE.SpawnPowerup[spawnIndex] then
+		GAMEMODE.SpawnPowerup[spawnIndex]:Remove()
+	end
+	
+	GAMEMODE.SpawnPowerup[spawnIndex] = ent
+	
+	return #GAMEMODE.SpawnPowerup
 end
 
 function GM:EntityTakeDamage( target, dmginfo )
@@ -117,7 +154,7 @@ function GM:StartCarryBall( ply )
 	local shouldntCarry = hook.Call("StartCarryBall", nil, ply)
 	if not shouldntCarry then
 		self.PlayerCarryingBall = ply
-		self.PlayerCarryingBall:SetVar("CarryingBall", true)
+		self.PlayerCarryingBall:SetNetworkedBool("CarryingBall", true)
 		ballEnt:Remove()
 		return true
 	else
@@ -128,7 +165,7 @@ end
 function GM:StopCarryBall()
 	if not self.PlayerCarryingBall then return false end
 	local ply = self.PlayerCarryingBall
-	self.PlayerCarryingBall:SetVar("CarryingBall", false)
+	self.PlayerCarryingBall:SetNetworkedBool("CarryingBall", false)
 	self.PlayerCarryingBall = nil
 	hook.Call("StopCarryBall", nil, ply)
 end
@@ -152,8 +189,8 @@ function GM:Think()
 		if not roundmanager.InRound() and #player.GetHumans() >= 1 then
 			roundmanager.Start(kbe_timelimit:GetInt())
 			self:ReloadPlayers()
-			for _,v in pairs(ents.FindByClass("kbe_powerupspawn")) do
-				self:RespawnPowerupOnTime( v )
+			for _,v in pairs(GAMEMODE.PowerupSpawns) do
+				self:RespawnPowerup(v:GetVar("SpawnID"))
 			end
 		end
 		if roundmanager.InRound() then

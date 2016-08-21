@@ -17,6 +17,15 @@ function GM:InitPostEntity()
 	self.BaseClass.InitPostEntity( self )
 end
 
+local hasPowerup = {}
+
+function GM:PlayerHasPowerup(ply)
+	if not hasPowerup[ply] then
+		return
+	end
+	return unpack(hasPowerup[ply])
+end
+
 function GM:Initialize()
 	kbpowerup.Add("Speed", "models/pickups/pickup_powerup_agility.mdl", function (ent, ply)
 		local originalRun = ply:GetRunSpeed()
@@ -25,13 +34,15 @@ function GM:Initialize()
 		ply:SetRunSpeed(originalRun * multiplier)
 		ply:SetWalkSpeed(originalWalk * multiplier)
 		ply:SetCrouchedWalkSpeed(originalCrouch * multiplier)
+		hasPowerup[ply] = {true, "Speed"}
 		
 		timer.Simple(15, function ()
+			hasPowerup[ply] = nil
 			ply:SetRunSpeed(originalRun)
 			ply:SetWalkSpeed(originalWalk)
 			ply:SetCrouchedWalkSpeed(originalCrouch)
 		end)
-	end)
+	end, "Speed Boost")
 	glogs.Write("Initialized")
 	self.BaseClass.Initialize( self )
 end
